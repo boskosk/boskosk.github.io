@@ -44,8 +44,8 @@
         }
  
         const data = await response.json();
-        return data.d.results;
         console.log(data.d.results);
+        return data.d.results;
       } catch (error) {
         console.error("Error fetching accommodations:", error);
         alert("Failed to fetch accommodations from SharePoint.");
