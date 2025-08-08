@@ -19,7 +19,7 @@
     }
  
     // Fetch accommodations from SharePoint REST API filtered by region
-    async function fetchAccommodations(region) {
+    /*async function fetchAccommodations(region) {
       // Replace site URL and list name accordingly
       const siteUrl = "https://haustechniksk-my.sharepoint.com/personal/sharepoint_flows_haustechniksk_onmicrosoft_com";
       const listName = "REPLA_Accommodations";
@@ -44,17 +44,24 @@
         }
  
         const data = await response.json();
-        console.log(data.d.results);
         return data.d.results;
       } catch (error) {
         console.error("Error fetching accommodations:", error);
         alert("Failed to fetch accommodations from SharePoint.");
         return [];
       }
+    }*/
+
+    async function fetchAccommodations(jsondata) {
+        const data = JSON.parse(decodeURIComponent(jsondata)); //JSON.parse
+        console.log(data);
+        return data;
+
     }
  
     function initMap() {
-      const selectedRegion = getQueryParam('region');
+      //const selectedRegion = getQueryParam('region');
+      const selectedRegion = getQueryParam('jsondata');
  
       map = new google.maps.Map(document.getElementById("map"), {
         zoom: 8,
