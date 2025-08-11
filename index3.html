@@ -165,6 +165,7 @@
         accommodations.forEach(item => {
           // Use 'Name' or 'Title' as address — adjust based on your list columns
           const address = item.Name || item.Title;
+          if (address !=selectedAcc1 && address !=selectedAcc2) {
  
           geocoder.geocode({ address: address }, (results, status) => {
             if (status === 'OK' && results[0]) {
@@ -179,6 +180,7 @@
               console.warn("Geocode failed for", address, status);
             }
           });
+        }
         });
       });
     }
@@ -192,6 +194,7 @@
 </script>
 </body>
 </html>
+
 
 
 
