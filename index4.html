@@ -7,6 +7,18 @@
       height: 95vh;
       width: 100%;
     }
+    .custom-distance {
+        background-color: #fff;
+        border: 0;
+        border-radius: 2px;
+        box-shadow: 0 1px 4px -1px rgba(0, 0, 0, 0.3);
+        margin: 10px;
+        padding: 0 0.5em;
+        font: 400 18px Roboto, Arial, sans-serif;
+        overflow: hidden;
+        height: 40px;
+        cursor: pointer;
+    }
 </style>
 <script>
     let map;
@@ -91,6 +103,10 @@
            (result, status) => {
                if (status === "OK") {
                   directionsRenderer.setDirections(result);
+                  const distanceElement = document.createElement("button");
+                  distanceElement.textContent = "Distanz: " + result.routes[0].legs[0].distance.text;
+                  distanceElement.classList.add("custom-distance");
+                  map.controls[google.maps.ControlPosition.TOP_RIGHT].push(distanceElement);
                } else {
                   console.error("Directions request failed due to " + status);
                }
@@ -220,6 +236,7 @@
 </script>
 </body>
 </html>
+
 
 
 
