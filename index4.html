@@ -19,6 +19,18 @@
         height: auto; /*40px*/
         cursor: pointer;
     }
+    .custom-el2 {
+        background-color: #fff;
+        border: 0;
+        border-radius: 2px;
+        box-shadow: 0 1px 4px -1px rgba(0, 0, 0, 0.3);
+        margin: 10px;
+        padding: 0 0.5em;
+        font: 400 12px Roboto, Arial, sans-serif;
+        overflow: hidden;
+        height: auto; /*40px*/
+        cursor: pointer;
+    }
 </style>
 <script>
     let map;
@@ -158,7 +170,7 @@
         "<text2 style='color:red;'>Rot: Unterkünfte im Bundesland des Projekts</text2><br>"+
         "<text3 style='color:green;'>Grün: Ausgewählte Unterkunft</text3><br>" +
         "<text4 style='color:orange;'>Orange: Aktuelle Unterkunft der Mitarbeiter</text4>";
-        legendElement.classList.add("custom-el");
+        legendElement.classList.add("custom-el2");
         map.controls[google.maps.ControlPosition.TOP_RIGHT].push(legendElement);
         // Blue marker - for project
         geocoder.geocode({ address: selectedProject }, (results, status) => {
@@ -245,10 +257,3 @@
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
