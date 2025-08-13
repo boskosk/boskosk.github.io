@@ -7,7 +7,7 @@
       height: 95vh;
       width: 100%;
     }
-    .custom-distance {
+    .custom-el {
         background-color: #fff;
         border: 0;
         border-radius: 2px;
@@ -16,7 +16,7 @@
         padding: 0 0.5em;
         font: 400 18px Roboto, Arial, sans-serif;
         overflow: hidden;
-        height: 40px;
+        height: auto; /*40px*/
         cursor: pointer;
     }
 </style>
@@ -105,7 +105,7 @@
                   directionsRenderer.setDirections(result);
                   const distanceElement = document.createElement("button");
                   distanceElement.textContent = "Distanz: " + result.routes[0].legs[0].distance.text;
-                  distanceElement.classList.add("custom-distance");
+                  distanceElement.classList.add("custom-el");
                   map.controls[google.maps.ControlPosition.TOP_RIGHT].push(distanceElement);
                } else {
                   console.error("Directions request failed due to " + status);
@@ -151,6 +151,15 @@
           scale: 2,
           anchor: new google.maps.Point(0, 20),
         };
+        // Legend
+        const legendElement = document.createElement("label");
+        legendElement.innerHTML = "Legende:<br>" +
+        "<text1 style='color:blue;'>Blau: Neues Projekt</text1><br>" +
+        "<text2 style='color:red;'>Rot: Unterkünfte im Bundesland des Projekts</text2><br>"+
+        "<text3 style='color:green;'>Grün: Ausgewählte Unterkunft</text3><br>" +
+        "<text4 style='color:orange;'>Orange: Aktuelle Unterkunft der Mitarbeiter</text4>";
+        legendElement.classList.add("custom-el");
+        map.controls[google.maps.ControlPosition.TOP_RIGHT].push(legendElement);
         // Blue marker - for project
         geocoder.geocode({ address: selectedProject }, (results, status) => {
             if (status === 'OK' && results[0]) {
@@ -165,7 +174,7 @@
               map.setCenter(results[0].geometry.location);
               console.log(results[0]);
             } else {
-              console.warn("Geocode failed for", address, status);
+              console.warn("Geocode failed for", selectedProject, status);
             }
           });
         //Green marker - for accommodation
@@ -182,7 +191,7 @@
               map.setCenter(results[0].geometry.location);
               console.log(results[0]);
             } else {
-              console.warn("Geocode failed for", address, status);
+              console.warn("Geocode failed for", selectedAcc1, status);
             }
           });
         //Orange marker - for accommodation
@@ -199,7 +208,7 @@
               //map.setCenter(results[0].geometry.location);
               console.log(results[0]);
             } else {
-              console.warn("Geocode failed for", address, status);
+              console.warn("Geocode failed for", selectedAcc2, status);
             }
           });
  
@@ -236,7 +245,6 @@
 </script>
 </body>
 </html>
-
 
 
 
