@@ -82,6 +82,21 @@
         return data;
 
     }
+    async function geocodeData(loc) {
+        const loc2 = encodeURIComponent(loc);
+        const url = `https://geocode.googleapis.com/v4beta/geocode/address/${loc2}?key=AIzaSyArAUkcLV9w8fnPkdI3foxoNrjmfve6atQ`;
+          try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                throw new Error(`Response status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                return result;
+        } catch (error) {
+            console.error(error.message);
+        }
+    }
  
     function initMap() {
       //const selectedRegion = getQueryParam('region');
@@ -96,7 +111,7 @@
         center: { lat: 48.5, lng: 9 },
       });
  
-      geocoder = new google.maps.Geocoder();
+      //geocoder = new google.maps.Geocoder();
  
       
 
@@ -173,52 +188,55 @@
         legendElement.classList.add("custom-el2");
         map.controls[google.maps.ControlPosition.TOP_RIGHT].push(legendElement);
         // Blue marker - for project
-        geocoder.geocode({ address: selectedProject }, (results, status) => {
-            if (status === 'OK' && results[0]) {
+        //geocoder.geocode({ address: selectedProject }, (results, status) => {
+        geocodeData(selectedProject).then(results => {
+            if (results) {
+              const myLatLng = { lat: results.results[0].location.latitude, lng: results.results[0].location.longitude }; 
               new google.maps.Marker({
                 map: map,
-                position: results[0].geometry.location,
+                position: myLatLng,
                 title: "Projekt: " + selectedProject,
                 icon: svgMarker
               });
  
               //if (selectedProject, map.setCenter(selectedProject.geometry.location), map.setCenter(results[0].geometry.location));
-              map.setCenter(results[0].geometry.location);
-              console.log(results[0]);
+              map.setCenter(myLatLng);
             } else {
               console.warn("Geocode failed for", selectedProject, status);
             }
           });
         //Green marker - for accommodation
-        geocoder.geocode({ address: selectedAcc1 }, (results, status) => {
-            if (status === 'OK' && results[0]) {
+        //geocoder.geocode({ address: selectedAcc1 }, (results, status) => {
+        geocodeData(selectedAcc1).then(results => {
+            if (results) {
+              const myLatLng = { lat: results.results[0].location.latitude, lng: results.results[0].location.longitude };
               new google.maps.Marker({
                 map: map,
-                position: results[0].geometry.location,
+                position: myLatLng,
                 title: selectedAcc1,
                 icon: svgGreenMarker
               });
  
               //if (selectedProject, map.setCenter(selectedProject.geometry.location), map.setCenter(results[0].geometry.location));
-              map.setCenter(results[0].geometry.location);
-              console.log(results[0]);
+              map.setCenter(myLatLng);
             } else {
               console.warn("Geocode failed for", selectedAcc1, status);
             }
           });
         //Orange marker - for accommodation
-        geocoder.geocode({ address: selectedAcc2 }, (results, status) => {
-            if (status === 'OK' && results[0]) {
+        geocodeData(selectedAcc2).then(results => {
+            if (results) {
+                const myLatLng = { lat: results.results[0].location.latitude, lng: results.results[0].location.longitude };
               new google.maps.Marker({
                 map: map,
-                position: results[0].geometry.location,
+                position: myLatLng,
                 title: selectedAcc2,
                 icon: svgOrangeMarker
               });
  
               //if (selectedProject, map.setCenter(selectedProject.geometry.location), map.setCenter(results[0].geometry.location));
               //map.setCenter(results[0].geometry.location);
-              console.log(results[0]);
+              
             } else {
               console.warn("Geocode failed for", selectedAcc2, status);
             }
@@ -229,11 +247,12 @@
           const address = item.Name || item.Title;
           if (address !=selectedAcc1 && address !=selectedAcc2) {
  
-          geocoder.geocode({ address: address }, (results, status) => {
-            if (status === 'OK' && results[0]) {
+          geocodeData(address).then(results => {
+            if (results) {
+              const myLatLng = { lat: results.results[0].location.latitude, lng: results.results[0].location.longitude };
               new google.maps.Marker({
                 map: map,
-                position: results[0].geometry.location,
+                position: myLatLng,
                 title: address
               });
  
@@ -257,3 +276,13 @@
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
