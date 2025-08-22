@@ -83,7 +83,7 @@
 
     }
     async function geocodeData(loc) {
-        const loc2 = encodeURI(loc);
+        const loc2 = encodeURIComponent(loc);
         const url = `https://geocode.googleapis.com/v4beta/geocode/address/${loc2}?key=AIzaSyArAUkcLV9w8fnPkdI3foxoNrjmfve6atQ`;
           try {
                 const response = await fetch(url);
@@ -276,6 +276,7 @@
 </script>
 </body>
 </html>
+
 
 
 
