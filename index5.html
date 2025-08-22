@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Accommodations Map</title>
+<style>
+    #map {
+      height: 95vh;
+      width: 100%;
+    }
+    .custom-el {
+        background-color: #fff;
+        border: 0;
+        border-radius: 2px;
+        box-shadow: 0 1px 4px -1px rgba(0, 0, 0, 0.3);
+        margin: 10px;
+        padding: 0 0.5em;
+        font: 400 18px Roboto, Arial, sans-serif;
+        overflow: hidden;
+        height: auto; /*40px*/
+        cursor: pointer;
+    }
+    .custom-el2 {
+        background-color: #fff;
+        border: 0;
+        border-radius: 2px;
+        box-shadow: 0 1px 4px -1px rgba(0, 0, 0, 0.3);
+        margin: 10px;
+        padding: 0 0.5em;
+        font: 400 12px Roboto, Arial, sans-serif;
+        overflow: hidden;
+        height: auto; /*40px*/
+        cursor: pointer;
+    }
+</style>
+<script>
+    let map;
+    let geocoder;
+ 
+    // Helper: get URL parameter
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+ 
+    // Fetch accommodations from SharePoint REST API filtered by region
+    /*async function fetchAccommodations(region) {
+      // Replace site URL and list name accordingly
+      const siteUrl = "https://haustechniksk-my.sharepoint.com/personal/sharepoint_flows_haustechniksk_onmicrosoft_com";
+      const listName = "REPLA_Accommodations";
+ 
+      // Build REST API filter query (assuming Region is a Choice field)
+      const filter = `Region eq '${region}'`;
+ 
+      const endpoint = `${siteUrl}/_api/web/lists/getbytitle('${listName}')/items?$select=Title,Name,Region&$filter=${encodeURIComponent(filter)}`;
+      //const endpoint = `https://haustechniksk-my.sharepoint.com/personal/sharepoint_flows_haustechniksk_onmicrosoft_com/_api/web/lists/getbytitle('REPLA_Accommodations')/items?$select=Title,Name,Region&$filter=Region%20eq%20%27Berlin%27`;
+ 
+      try {
+        const response = await fetch(endpoint, {
+          method: "GET",
+          headers: {
+            "Accept": "application/json;odata=verbose"
+          },
+          credentials: "include" // important to send cookies for auth
+        });
+ 
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+ 
+        const data = await response.json();
+        return data.d.results;
+      } catch (error) {
+        console.error("Error fetching accommodations:", error);
+        alert("Failed to fetch accommodations from SharePoint.");
+        return [];
+      }
+    }*/
+
+    async function fetchAccommodations(jsondata) {
+        const data = JSON.parse(decodeURIComponent(jsondata)); //JSON.parse
+        console.log(data);
+        return data;
+
+    }
+    async function geocodeData(loc) {
+        const url = `https://geocode.googleapis.com/v4beta/geocode/address/${loc}?key=AIzaSyArAUkcLV9w8fnPkdI3foxoNrjmfve6atQ`;
+          try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                throw new Error(`Response status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                return result;
+        } catch (error) {
+            console.error(error.message);
+        }
+    }
+ 
+    function initMap() {
+      //const selectedRegion = getQueryParam('region');
+      const selectedMode = getQueryParam('mode');
+      const selectedRegion = getQueryParam('jsondata');
+      const selectedProject = getQueryParam('project');
+      const selectedAcc1 = getQueryParam('acc1');
+      const selectedAcc2 = getQueryParam('acc2');
+ 
+      map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 8,
+        center: { lat: 48.5, lng: 9 },
+      });
+ 
+      //geocoder = new google.maps.Geocoder();
+ 
+      
+
+       if (selectedMode === "nav" && selectedProject && selectedAcc1) {
+       // Use Directions API
+       const directionsService = new google.maps.DirectionsService();
+       const directionsRenderer = new google.maps.DirectionsRenderer();
+       directionsRenderer.setMap(map);
+ 
+       directionsService.route(
+           {
+               origin: selectedProject,
+               destination: selectedAcc1,
+               travelMode: google.maps.TravelMode.DRIVING
+           },
+           (result, status) => {
+               if (status === "OK") {
+                  directionsRenderer.setDirections(result);
+                  const distanceElement = document.createElement("button");
+                  distanceElement.textContent = "Distanz: " + result.routes[0].legs[0].distance.text;
+                  distanceElement.classList.add("custom-el");
+                  map.controls[google.maps.ControlPosition.TOP_RIGHT].push(distanceElement);
+               } else {
+                  console.error("Directions request failed due to " + status);
+               }
+           }
+       );
+   } else {
+
+        if (!selectedRegion) {
+        alert("No region specified.");
+        return;
+      }
+ 
+      fetchAccommodations(selectedRegion).then(accommodations => {
+        if (accommodations.length === 0) {
+          alert("No accommodations found for region: " + selectedRegion);
+          return;
+        }
+        const svgMarker = {
+          path: "M-1.547 12l6.563-6.609-1.406-1.406-5.156 5.203-2.063-2.109-1.406 1.406zM0 0q2.906 0 4.945 2.039t2.039 4.945q0 1.453-0.727 3.328t-1.758 3.516-2.039 3.070-1.711 2.273l-0.75 0.797q-0.281-0.328-0.75-0.867t-1.688-2.156-2.133-3.141-1.664-3.445-0.75-3.375q0-2.906 2.039-4.945t4.945-2.039z",
+          fillColor: "blue",
+          fillOpacity: 1,
+          strokeWeight: 0,
+          rotation: 0,
+          scale: 2,
+          anchor: new google.maps.Point(0, 20),
+        };
+        const svgGreenMarker = {
+          path: "M-1.547 12l6.563-6.609-1.406-1.406-5.156 5.203-2.063-2.109-1.406 1.406zM0 0q2.906 0 4.945 2.039t2.039 4.945q0 1.453-0.727 3.328t-1.758 3.516-2.039 3.070-1.711 2.273l-0.75 0.797q-0.281-0.328-0.75-0.867t-1.688-2.156-2.133-3.141-1.664-3.445-0.75-3.375q0-2.906 2.039-4.945t4.945-2.039z",
+          fillColor: "green",
+          fillOpacity: 1,
+          strokeWeight: 0,
+          rotation: 0,
+          scale: 2,
+          anchor: new google.maps.Point(0, 20),
+        };
+        const svgOrangeMarker = {
+          path: "M-1.547 12l6.563-6.609-1.406-1.406-5.156 5.203-2.063-2.109-1.406 1.406zM0 0q2.906 0 4.945 2.039t2.039 4.945q0 1.453-0.727 3.328t-1.758 3.516-2.039 3.070-1.711 2.273l-0.75 0.797q-0.281-0.328-0.75-0.867t-1.688-2.156-2.133-3.141-1.664-3.445-0.75-3.375q0-2.906 2.039-4.945t4.945-2.039z",
+          fillColor: "orange",
+          fillOpacity: 1,
+          strokeWeight: 0,
+          rotation: 0,
+          scale: 2,
+          anchor: new google.maps.Point(0, 20),
+        };
+        // Legend
+        const legendElement = document.createElement("label");
+        legendElement.innerHTML = "Legende:<br>" +
+        "<text1 style='color:blue;'>Blau: Neues Projekt</text1><br>" +
+        "<text2 style='color:red;'>Rot: Unterkünfte im Bundesland des Projekts</text2><br>"+
+        "<text3 style='color:green;'>Grün: Ausgewählte Unterkunft</text3><br>" +
+        "<text4 style='color:orange;'>Orange: Aktuelle Unterkunft der Mitarbeiter</text4>";
+        legendElement.classList.add("custom-el2");
+        map.controls[google.maps.ControlPosition.TOP_RIGHT].push(legendElement);
+        // Blue marker - for project
+        //geocoder.geocode({ address: selectedProject }, (results, status) => {
+        geocodeData(selectedProject).then(results => {
+            if (results) {
+              const myLatLng = { lat: results.results[0].location.latitude, lng: results.results[0].location.longitude }; 
+              new google.maps.Marker({
+                map: map,
+                position: myLatLng,
+                title: "Projekt: " + selectedProject,
+                icon: svgMarker
+              });
+ 
+              //if (selectedProject, map.setCenter(selectedProject.geometry.location), map.setCenter(results[0].geometry.location));
+              map.setCenter(myLatLng);
+            } else {
+              console.warn("Geocode failed for", selectedProject, status);
+            }
+          });
+        //Green marker - for accommodation
+        //geocoder.geocode({ address: selectedAcc1 }, (results, status) => {
+        geocodeData(selectedAcc1).then(results => {
+            if (results) {
+              const myLatLng = { lat: results.results[0].location.latitude, lng: results.results[0].location.longitude };
+              new google.maps.Marker({
+                map: map,
+                position: myLatLng,
+                title: selectedAcc1,
+                icon: svgGreenMarker
+              });
+ 
+              //if (selectedProject, map.setCenter(selectedProject.geometry.location), map.setCenter(results[0].geometry.location));
+              map.setCenter(myLatLng);
+            } else {
+              console.warn("Geocode failed for", selectedAcc1, status);
+            }
+          });
+        //Orange marker - for accommodation
+        geocodeData(selectedAcc2).then(results => {
+            if (results) {
+                const myLatLng = { lat: results.results[0].location.latitude, lng: results.results[0].location.longitude };
+              new google.maps.Marker({
+                map: map,
+                position: myLatLng,
+                title: selectedAcc2,
+                icon: svgOrangeMarker
+              });
+ 
+              //if (selectedProject, map.setCenter(selectedProject.geometry.location), map.setCenter(results[0].geometry.location));
+              //map.setCenter(results[0].geometry.location);
+              
+            } else {
+              console.warn("Geocode failed for", selectedAcc2, status);
+            }
+          });
+ 
+        accommodations.forEach(item => {
+          // Use 'Name' or 'Title' as address — adjust based on your list columns
+          const address = item.Name || item.Title;
+          if (address !=selectedAcc1 && address !=selectedAcc2) {
+ 
+          geocodeData(address).then(results => {
+            if (results) {
+              const myLatLng = { lat: results.results[0].location.latitude, lng: results.results[0].location.longitude };
+              new google.maps.Marker({
+                map: map,
+                position: myLatLng,
+                title: address
+              });
+ 
+              //map.setCenter(results[0].geometry.location);
+            } else {
+              console.warn("Geocode failed for", address, status);
+            }
+          });
+        }
+        });
+      });
+    }
+    }
+</script>
+</head>
+<body>
+<div id="map"></div>
+ 
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyArAUkcLV9w8fnPkdI3foxoNrjmfve6atQ&callback=initMap">
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
